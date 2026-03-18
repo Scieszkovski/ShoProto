@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ModernShop</title>
+    <title>ModernShop - PROT-19 Update</title>
     <style>
         /* --- CSS STYLES --- */
         :root {
-            --primary: #2563ec;
+            --primary: #2563eb;
             --dark: #1e293b;
             --light: #f8fafc;
             --gray: #64748b;
             --white: #ffffff;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --gold: #fbbf24;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -57,6 +58,20 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* Utility: Stars */
+        .stars { color: var(--gold); letter-spacing: 2px; }
+        .rating-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #fffbeb;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #b45309;
+            margin-top: 5px;
+        }
+
         /* VIEW 1: MAIN PAGE (Product Grid) */
         .product-grid {
             display: grid;
@@ -71,12 +86,15 @@
             box-shadow: var(--shadow);
             transition: transform 0.2s;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
         }
         .product-card:hover { transform: translateY(-5px); }
-        .card-img { height: 200px; background-color: #ddd; display: flex; align-items: center; justify-content: center; color: #888; }
-        .card-body { padding: 1rem; }
+        .card-img { height: 200px; background-color: #ddd; display: flex; align-items: center; justify-content: center; color: #888; font-size: 3rem; }
+        .card-body { padding: 1rem; flex-grow: 1; display: flex; flex-direction: column; }
         .card-title { font-size: 1.1rem; margin-bottom: 0.5rem; }
-        .card-price { color: var(--primary); font-weight: bold; font-size: 1.2rem; }
+        .card-price { color: var(--primary); font-weight: bold; font-size: 1.2rem; margin-top: auto; }
+        
         .btn-add {
             width: 100%;
             padding: 0.5rem;
@@ -86,6 +104,7 @@
             margin-top: 1rem;
             border-radius: 4px;
             cursor: pointer;
+            transition: background 0.2s;
         }
         .btn-add:hover { background: var(--primary); }
 
@@ -99,10 +118,11 @@
             border-radius: 8px;
             box-shadow: var(--shadow);
         }
-        .detail-image { height: 400px; background: #eee; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #ccc; }
+        .detail-image { height: 400px; background: #eee; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 5rem; color: #ccc; }
         .detail-info h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-        .detail-price { font-size: 2rem; color: var(--primary); margin-bottom: 1.5rem; }
-        .detail-desc { color: var(--gray); margin-bottom: 2rem; }
+        .detail-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .detail-price { font-size: 2rem; color: var(--primary); font-weight: bold; }
+        .detail-desc { color: var(--gray); margin-bottom: 2rem; font-size: 1.1rem; }
         .action-buttons { display: flex; gap: 1rem; }
         .btn-primary { padding: 0.8rem 2rem; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
         .btn-secondary { padding: 0.8rem 2rem; background: transparent; border: 2px solid var(--dark); color: var(--dark); border-radius: 4px; cursor: pointer; font-size: 1rem; }
@@ -117,8 +137,40 @@
             box-shadow: var(--shadow);
             border-left: 4px solid var(--primary);
         }
-        .review-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
-        .stars { color: #fbbf24; }
+        .review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+        .review-author { font-weight: bold; }
+        
+        .review-form-container {
+            margin-top: 3rem; 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 8px; 
+            box-shadow: var(--shadow);
+        }
+        
+        .star-rating-input {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .star-rating-input input { display: none; }
+        
+        .star-rating-input label {
+            font-size: 2rem;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .star-rating-input label:hover,
+        .star-rating-input label:hover ~ label,
+        .star-rating-input input:checked ~ label {
+            color: var(--gold);
+        }
+
         .review-form textarea {
             width: 100%;
             padding: 1rem;
@@ -126,11 +178,13 @@
             border-radius: 4px;
             margin-bottom: 1rem;
             resize: vertical;
+            font-family: inherit;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .product-detail-wrapper { grid-template-columns: 1fr; }
+            .detail-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
         }
     </style>
 </head>
@@ -166,12 +220,19 @@
                 <div class="detail-image" id="p-image">📷</div>
                 <div class="detail-info">
                     <h1 id="p-title">Product Name</h1>
-                    <div class="detail-price" id="p-price">$0.00</div>
+                    
+                    <div class="detail-header">
+                        <div class="detail-price" id="p-price">$0.00</div>
+                        <div id="p-rating-display" class="rating-badge">
+                            <!-- Stars injected here -->
+                        </div>
+                    </div>
+
                     <p class="detail-desc" id="p-desc">Description goes here.</p>
                     
                     <div class="action-buttons">
                         <button class="btn-primary" onclick="addToCart()">Add to Cart</button>
-                        <button class="btn-secondary" onclick="router('reviews')">Read Reviews</button>
+                        <button class="btn-secondary" onclick="router('reviews')">Read Reviews (<span id="p-review-count">0</span>)</button>
                     </div>
                 </div>
             </div>
@@ -188,9 +249,20 @@
                 </div>
 
                 <!-- Add Review Form -->
-                <div style="margin-top: 3rem; background: white; padding: 2rem; border-radius: 8px;">
+                <div class="review-form-container">
                     <h3>Write a Review</h3>
                     <form onsubmit="handleReviewSubmit(event)" style="margin-top: 1rem;">
+                        
+                        <!-- Star Rating Input -->
+                        <div style="margin-bottom: 0.5rem; font-weight: bold;">Your Rating:</div>
+                        <div class="star-rating-input">
+                            <input type="radio" id="star5" name="rating" value="5" required /><label for="star5" title="5 stars">★</label>
+                            <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 stars">★</label>
+                            <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 stars">★</label>
+                            <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 stars">★</label>
+                            <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 star">★</label>
+                        </div>
+
                         <textarea rows="4" placeholder="Share your experience..." required></textarea>
                         <button type="submit" class="btn-primary">Submit Review</button>
                     </form>
@@ -203,54 +275,111 @@
     <script>
         /* --- JAVASCRIPT LOGIC --- */
 
-        // Mock Data
+        // Mock Data with Reviews included
         const products = [
-            { id: 1, title: "Wireless Headphones", price: 199.99, desc: "High-fidelity audio with noise cancellation.", image: "🎧" },
-            { id: 2, title: "Smart Watch", price: 249.50, desc: "Track your fitness and stay connected.", image: "⌚" },
-            { id: 3, title: "Mechanical Keyboard", price: 120.00, desc: "Tactile switches for the ultimate typing experience.", image: "⌨️" },
-            { id: 4, title: "Gaming Mouse", price: 59.99, desc: "Precision tracking and customizable RGB lighting.", image: "🖱️" }
+            { 
+                id: 1, 
+                title: "Wireless Headphones", 
+                price: 199.99, 
+                desc: "High-fidelity audio with noise cancellation.", 
+                image: "🎧",
+                reviews: [
+                    { user: "Alice M.", rating: 5, text: "Absolutely love this product! Quality is top notch." },
+                    { user: "John D.", rating: 4, text: "Great value for money, shipping was fast." }
+                ]
+            },
+            { 
+                id: 2, 
+                title: "Smart Watch", 
+                price: 249.50, 
+                desc: "Track your fitness and stay connected.", 
+                image: "⌚",
+                reviews: [
+                    { user: "Sarah K.", rating: 5, text: "Best watch I've ever owned." }
+                ]
+            },
+            { 
+                id: 3, 
+                title: "Mechanical Keyboard", 
+                price: 120.00, 
+                desc: "Tactile switches for the ultimate typing experience.", 
+                image: "⌨️",
+                reviews: [] 
+            },
+            { 
+                id: 4, 
+                title: "Gaming Mouse", 
+                price: 59.99, 
+                desc: "Precision tracking and customizable RGB lighting.", 
+                image: "🖱️",
+                reviews: [
+                    { user: "Mike R.", rating: 3, text: "Good mouse, but software is buggy." }
+                ]
+            }
         ];
 
         let cartCount = 0;
-        let currentProduct = products[0]; // Default selected product
+        let currentProduct = products[0]; 
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             renderGrid();
-            loadProductDetails(currentProduct);
-            renderReviews();
+            // Default load first product details if needed, but usually done on click
         });
 
-        // Router Function (Switches Views)
+        // Helper: Generate Stars HTML
+        function getStarsHtml(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += i <= rating ? '★' : '☆';
+            }
+            return stars;
+        }
+
+        // Helper: Calculate Average Rating
+        function getAverageRating(reviews) {
+            if (!reviews || reviews.length === 0) return 0;
+            const sum = reviews.reduce((acc, curr) => acc + curr.rating, 0);
+            return (sum / reviews.length).toFixed(1);
+        }
+
+        // Router Function
         function router(viewName) {
-            // Hide all sections
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-links button').forEach(el => el.classList.remove('active'));
 
-            // Show target section
             document.getElementById(`view-${viewName}`).classList.add('active');
             
-            // Update Nav State
             const navBtn = document.getElementById(`nav-${viewName}`);
             if(navBtn) navBtn.classList.add('active');
 
-            // Scroll to top
             window.scrollTo(0,0);
         }
 
-        // Render Home Grid
+        // Render Home Grid (Updated with Ratings)
         function renderGrid() {
             const grid = document.getElementById('product-grid');
-            grid.innerHTML = products.map(p => `
+            grid.innerHTML = products.map(p => {
+                const avgRating = getAverageRating(p.reviews);
+                const reviewCount = p.reviews.length;
+                
+                return `
                 <div class="product-card" onclick="openProduct(${p.id})">
                     <div class="card-img">${p.image}</div>
                     <div class="card-body">
                         <div class="card-title">${p.title}</div>
+                        
+                        ${reviewCount > 0 ? `
+                        <div class="rating-badge">
+                            <span class="stars" style="margin-right:4px; font-size:0.9em">${getStarsHtml(Math.round(avgRating))}</span>
+                            <span>${avgRating} (${reviewCount})</span>
+                        </div>` : '<div style="height:24px"></div>'}
+
                         <div class="card-price">$${p.price.toFixed(2)}</div>
                         <button class="btn-add" onclick="event.stopPropagation(); addToCart()">Add to Cart</button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // Open Specific Product
@@ -266,6 +395,22 @@
             document.getElementById('p-price').innerText = `$${product.price.toFixed(2)}`;
             document.getElementById('p-desc').innerText = product.desc;
             document.getElementById('p-image').innerText = product.image;
+            
+            // Update Rating Display in Details
+            const avgRating = getAverageRating(product.reviews);
+            const count = product.reviews.length;
+            const ratingDisplay = document.getElementById('p-rating-display');
+            
+            if (count > 0) {
+                ratingDisplay.innerHTML = `
+                    <span class="stars">${getStarsHtml(Math.round(avgRating))}</span>
+                    <span style="margin-left:5px">${avgRating} (${count} reviews)</span>
+                `;
+                document.getElementById('p-review-count').innerText = count;
+            } else {
+                ratingDisplay.innerHTML = `<span style="color:#999">No reviews yet</span>`;
+                document.getElementById('p-review-count').innerText = 0;
+            }
         }
 
         // Cart Logic
@@ -276,18 +421,20 @@
         }
 
         // Reviews Logic
-        const mockReviews = [
-            { user: "Alice M.", rating: 5, text: "Absolutely love this product! Quality is top notch." },
-            { user: "John D.", rating: 4, text: "Great value for money, shipping was fast." }
-        ];
-
         function renderReviews() {
             const list = document.getElementById('reviews-list');
-            list.innerHTML = mockReviews.map(r => `
+            const productReviews = currentProduct.reviews;
+
+            if (productReviews.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#888; padding:2rem;">No reviews yet. Be the first to write one!</p>';
+                return;
+            }
+
+            list.innerHTML = productReviews.map(r => `
                 <div class="review-card">
                     <div class="review-header">
-                        <strong>${r.user}</strong>
-                        <span class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+                        <span class="review-author">${r.user}</span>
+                        <span class="stars">${getStarsHtml(r.rating)}</span>
                     </div>
                     <p>${r.text}</p>
                 </div>
@@ -297,17 +444,38 @@
         function handleReviewSubmit(e) {
             e.preventDefault();
             const text = e.target.querySelector('textarea').value;
+            const ratingInput = e.target.querySelector('input[name="rating"]:checked');
             
-            // Add new review to top of list
-            mockReviews.unshift({
+            if (!ratingInput) {
+                alert("Please select a star rating.");
+                return;
+            }
+
+            const newReview = {
                 user: "You",
-                rating: 5,
+                rating: parseInt(ratingInput.value),
                 text: text
-            });
+            };
+
+            // Add to current product data
+            currentProduct.reviews.unshift(newReview);
             
+            // Re-render views to reflect changes
             renderReviews();
+            loadProductDetails(currentProduct); // Update count/stars on product page too
+            renderGrid(); // Update stars on home page too
+            
             e.target.reset();
             alert("Review submitted successfully!");
+        }
+        
+        // Ensure reviews are rendered when switching to that tab
+        const originalRouter = router;
+        router = function(viewName) {
+            originalRouter(viewName);
+            if(viewName === 'reviews') {
+                renderReviews();
+            }
         }
     </script>
 </body>
